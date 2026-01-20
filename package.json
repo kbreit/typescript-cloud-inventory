@@ -1,9 +1,15 @@
 {
   "name": "typescript-cloud-inventory",
-  "description": "TypeScript application to collect cloud inventory for the purpose of learning TypeScript", 
+  "description": "TypeScript application to collect cloud inventory for the purpose of learning TypeScript",
   "author": "Kevin Breit",
   "main": "dist/index.js",
   "devDependencies": {
+    "@types/node": "^25.0.9",
+    "@typescript-eslint/eslint-plugin": "^8.53.1",
+    "@typescript-eslint/parser": "^8.53.1",
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }
