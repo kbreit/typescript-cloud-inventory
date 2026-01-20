@@ -1,4 +1,8 @@
 {
+  "name": "typescript-cloud-inventory",
+  "description": "TypeScript application to collect cloud inventory for the purpose of learning TypeScript", 
+  "author": "Kevin Breit",
+  "main": "dist/index.js",
   "devDependencies": {
     "typescript": "^5.9.3"
   }
