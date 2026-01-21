@@ -1,7 +1,7 @@
 # Cloud Resource Inventory CLI - Implementation Todo List
 
 ## Current Status
-**Last Updated:** Project rescanned on 2026-01-20 at 17:00
+**Last Updated:** Project rescanned on 2026-01-20 at 21:00
 
 **Completed:**
 - ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js)
@@ -28,9 +28,19 @@
   - EC2Instance interface (src/types/inventory.ts)
   - OutputFormat type (src/types/config.ts)
   - Barrel exports (src/types/index.ts)
+- ✅ AWS client service implemented:
+  - createEC2Client factory function
+  - Supports optional profile selection
+  - Dynamic region configuration
+- 🔄 EC2 service partially implemented:
+  - ✅ EC2Service class created and exported
+  - ✅ listInstances method working (single region)
+  - ✅ AWS response transformation to EC2Instance[]
+  - ❌ listAllRegions method not yet implemented
+  - ❌ Pagination not yet handled
 
 **Next Steps:**
-1. Implement EC2 service for listing instances (src/services/ec2-service.ts)
+1. Complete EC2 service (listAllRegions method)
 2. Create output formatters (src/formatters/)
 3. Implement CLI commands (src/commands/)
 
@@ -94,13 +104,17 @@
 - ✅ Support profile selection (optional profile parameter)
 - ✅ Export client factory function (returns configured EC2Client)
 
-### 8. ❌ Implement EC2 service for listing instances
-- `src/services/ec2-service.ts`
-- Create EC2Service class
-- Implement listInstances method for single region
-- Implement listAllRegions method for multiple regions
-- Handle pagination if needed
-- Transform AWS responses to typed inventory items
+### 8. 🔄 Implement EC2 service for listing instances
+- ✅ `src/services/ec2-service.ts` created
+- ✅ Create EC2Service class (exported)
+- ✅ Implement listInstances method for single region
+  - Uses dynamic region parameter
+  - Fetches instances via DescribeInstancesCommand
+  - Transforms AWS response to EC2Instance[] format
+  - Handles Tags to extract instance name
+- ❌ Implement listAllRegions method for multiple regions (TODO)
+- ❌ Handle pagination if needed (optional for MVP)
+- ✅ Transform AWS responses to typed inventory items
 
 ### 9. ❌ Create output formatters (JSON, table, CSV)
 - `src/formatters/json-formatter.ts` - JSON.stringify with formatting
