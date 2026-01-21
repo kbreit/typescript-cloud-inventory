@@ -27,4 +27,14 @@ export class EC2Service {
     return ec2Instances;
   }
 
+  listAllRegions = async(regions: string[]): Promise<EC2Instance[]> => {
+    let allEC2Instances: EC2Instance[] = [];
+    for (const region of regions) {
+      const instances = await this.listInstances(region);
+      allEC2Instances = allEC2Instances.concat(instances);
+    }
+
+    return allEC2Instances;
+  }
+
 }
