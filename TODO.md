@@ -1,7 +1,7 @@
 # Cloud Resource Inventory CLI - Implementation Todo List
 
 ## Current Status
-**Last Updated:** Project rescanned on 2026-01-20 at 21:00
+**Last Updated:** Project rescanned on 2026-01-21 at 09:00
 
 **Completed:**
 - ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js)
@@ -32,17 +32,17 @@
   - createEC2Client factory function
   - Supports optional profile selection
   - Dynamic region configuration
-- 🔄 EC2 service partially implemented:
+- ✅ EC2 service fully implemented:
   - ✅ EC2Service class created and exported
   - ✅ listInstances method working (single region)
+  - ✅ listAllRegions method working (multiple regions in parallel)
   - ✅ AWS response transformation to EC2Instance[]
-  - ❌ listAllRegions method not yet implemented
-  - ❌ Pagination not yet handled
+  - ✅ Uses Promise.all() for parallel region queries
 
 **Next Steps:**
-1. Complete EC2 service (listAllRegions method)
-2. Create output formatters (src/formatters/)
-3. Implement CLI commands (src/commands/)
+1. Create output formatters (src/formatters/)
+2. Implement CLI commands (src/commands/)
+3. Create main entry point (src/index.ts)
 
 ---
 
@@ -104,7 +104,7 @@
 - ✅ Support profile selection (optional profile parameter)
 - ✅ Export client factory function (returns configured EC2Client)
 
-### 8. 🔄 Implement EC2 service for listing instances
+### 8. ✅ Implement EC2 service for listing instances
 - ✅ `src/services/ec2-service.ts` created
 - ✅ Create EC2Service class (exported)
 - ✅ Implement listInstances method for single region
@@ -112,8 +112,12 @@
   - Fetches instances via DescribeInstancesCommand
   - Transforms AWS response to EC2Instance[] format
   - Handles Tags to extract instance name
-- ❌ Implement listAllRegions method for multiple regions (TODO)
-- ❌ Handle pagination if needed (optional for MVP)
+- ✅ Implement listAllRegions method for multiple regions
+  - Takes array of region names
+  - Uses Promise.all() to query regions in parallel
+  - Uses .flat() to combine results into single array
+  - Reuses listInstances method (no code duplication)
+- ⚠️ Pagination not implemented (optional for MVP)
 - ✅ Transform AWS responses to typed inventory items
 
 ### 9. ❌ Create output formatters (JSON, table, CSV)
