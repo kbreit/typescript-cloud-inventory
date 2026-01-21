@@ -11,5 +11,11 @@
     "prettier": "^3.8.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.972.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.2"
   }
 }

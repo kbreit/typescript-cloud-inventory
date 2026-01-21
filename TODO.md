@@ -1,7 +1,7 @@
 # Cloud Resource Inventory CLI - Implementation Todo List
 
 ## Current Status
-**Last Updated:** Project rescanned on 2026-01-20 at 16:30
+**Last Updated:** Project rescanned on 2026-01-20 at 17:00
 
 **Completed:**
 - ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js)
@@ -19,11 +19,20 @@
   - sourceMap enabled
 - ✅ Project directory structure created:
   - src/commands/, src/services/, src/formatters/, src/types/, src/utils/
+- ✅ AWS SDK and CLI dependencies installed:
+  - @aws-sdk/client-ec2 v3.972.0
+  - @aws-sdk/credential-providers v3.972.0
+  - commander v14.0.2
+  - cli-table3 v0.6.5
+- ✅ Type definitions created:
+  - EC2Instance interface (src/types/inventory.ts)
+  - OutputFormat type (src/types/config.ts)
+  - Barrel exports (src/types/index.ts)
 
 **Next Steps:**
-1. Install AWS SDK and CLI dependencies (commander, cli-table3, @aws-sdk/client-ec2)
-2. Create type definitions for EC2Instance and configuration
-3. Implement AWS client service
+1. Implement EC2 service for listing instances (src/services/ec2-service.ts)
+2. Create output formatters (src/formatters/)
+3. Implement CLI commands (src/commands/)
 
 ---
 
@@ -68,23 +77,22 @@
 
 ## Core Implementation Phase
 
-### 5. ❌ Install AWS SDK and CLI dependencies
-```bash
-npm install @aws-sdk/client-ec2 @aws-sdk/credential-providers
-npm install commander cli-table3
-npm install --save-dev @types/cli-table3
-```
+### 5. ✅ Install AWS SDK and CLI dependencies
+- ✅ @aws-sdk/client-ec2 v3.972.0
+- ✅ @aws-sdk/credential-providers v3.972.0
+- ✅ commander v14.0.2
+- ✅ cli-table3 v0.6.5 (includes built-in TypeScript types)
 
-### 6. ❌ Create type definitions for EC2Instance and configuration
-- `src/types/inventory.ts` - EC2Instance interface
-- `src/types/config.ts` - CLI configuration types
-- `src/types/index.ts` - Export all types
+### 6. ✅ Create type definitions for EC2Instance and configuration
+- ✅ `src/types/inventory.ts` - EC2Instance interface
+- ✅ `src/types/config.ts` - OutputFormat type
+- ✅ `src/types/index.ts` - Barrel exports for all types
 
-### 7. ❌ Implement AWS client initialization service
-- `src/services/aws-client.ts`
-- Handle credential provider setup
-- Support profile selection
-- Export client factory functions
+### 7. ✅ Implement AWS client initialization service
+- ✅ `src/services/aws-client.ts` - createEC2Client function
+- ✅ Handle credential provider setup using fromIni()
+- ✅ Support profile selection (optional profile parameter)
+- ✅ Export client factory function (returns configured EC2Client)
 
 ### 8. ❌ Implement EC2 service for listing instances
 - `src/services/ec2-service.ts`
