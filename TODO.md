@@ -1,7 +1,7 @@
 # Cloud Resource Inventory CLI - Implementation Todo List
 
 ## Current Status
-**Last Updated:** 2026-01-21 at 14:30
+**Last Updated:** 2026-01-23 at 15:45
 
 **Completed:**
 - ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js)
@@ -17,6 +17,8 @@
   - module: CommonJS
   - rootDir: ./src, outDir: ./dist
   - sourceMap enabled
+  - esModuleInterop enabled
+  - types: ["node"] configured
 - ✅ Project directory structure created:
   - src/commands/, src/services/, src/formatters/, src/types/, src/utils/
 - ✅ AWS SDK and CLI dependencies installed:
@@ -34,6 +36,7 @@
   - Dynamic region configuration
 - ✅ EC2 service fully implemented:
   - ✅ EC2Service class created and exported
+  - ✅ Constructor accepts optional profile parameter
   - ✅ listInstances method working (single region)
   - ✅ listAllRegions method working (multiple regions in parallel)
   - ✅ AWS response transformation to EC2Instance[]
@@ -43,11 +46,18 @@
   - ✅ csv-formatter.ts complete (bug fixed, header added)
   - ✅ table-formatter.ts complete (uses cli-table3 with spread operator)
   - ✅ index.ts complete (exports all formatters + factory function)
+- ✅ CLI commands (COMPLETE - 100%):
+  - ✅ ec2.ts command handler with Commander.js
+  - ✅ Parses --region, --all-regions, --profile, --format options
+  - ✅ Integrates EC2Service with profile support
+  - ✅ Uses formatOutput() factory function
+  - ✅ index.ts exports commands
 
 **Next Steps:**
-1. ✅ Output formatters complete
-2. Implement CLI commands (src/commands/)
-3. Create main entry point (src/index.ts)
+1. Create main entry point (src/index.ts)
+2. Add error handling and validation (src/utils/)
+3. Add npm scripts for build, dev, and start
+4. Test the CLI with AWS credentials
 
 ---
 
@@ -151,11 +161,17 @@
   - ✅ Switch statement calls appropriate formatter based on format type
   - ✅ Fully meets requirements
 
-### 10. ❌ Implement CLI command structure with Commander.js
-- `src/commands/ec2.ts` - EC2 command handler
-- Parse options: --region, --all-regions, --profile, --format
-- Call EC2Service and formatters
-- `src/commands/index.ts` - Export commands
+### 10. ✅ Implement CLI command structure with Commander.js - COMPLETE
+- ✅ `src/commands/ec2.ts` - EC2 command handler
+  - ✅ Created Commander program with description
+  - ✅ Parses all 4 required options: --region, --all-regions, --profile, --format
+  - ✅ Passes profile to EC2Service constructor
+  - ✅ Uses formatOutput() with user-specified format (defaults to 'table')
+  - ✅ Handles both single region and all-regions modes
+  - ✅ US regions list defined: us-east-1, us-east-2, us-west-1, us-west-2, us-gov-west-1, us-gov-east-1
+  - ✅ Error handling with .catch()
+- ✅ `src/commands/index.ts` - Export commands
+  - ✅ Exports ec2 command with correct relative path syntax
 
 ### 11. ❌ Add error handling and validation
 - `src/utils/error-handler.ts` - Custom error types

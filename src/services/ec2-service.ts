@@ -3,9 +3,14 @@ import { EC2Instance } from "../types/index";
 import { DescribeInstancesCommand } from "@aws-sdk/client-ec2";
 
 export class EC2Service {
+  private profile: string | undefined;
+
+  constructor(profile?: string) {
+    this.profile = profile;
+  }
 
   listInstances = async(region: string): Promise<EC2Instance[]> => {
-    const client = await createEC2Client(region);
+    const client = await createEC2Client(region, this.profile);
 
     const input = {
       DryRun: false,
