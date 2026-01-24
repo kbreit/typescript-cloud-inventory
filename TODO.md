@@ -1,10 +1,10 @@
 # Cloud Resource Inventory CLI - Implementation Todo List
 
 ## Current Status
-**Last Updated:** 2026-01-23 at 15:45
+**Last Updated:** 2026-01-24 at 17:16
 
 **Completed:**
-- ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js)
+- ✅ package.json fully configured (name: typescript-cloud-inventory, author: Kevin Breit, main: dist/index.js, version: 0.0.0)
 - ✅ All development dependencies installed:
   - TypeScript v5.9.3
   - ts-node v10.9.2
@@ -15,9 +15,11 @@
   - strict mode enabled
   - target: ES2020
   - module: CommonJS
+  - moduleResolution: node
   - rootDir: ./src, outDir: ./dist
   - sourceMap enabled
   - esModuleInterop enabled
+  - resolveJsonModule enabled
   - types: ["node"] configured
 - ✅ Project directory structure created:
   - src/commands/, src/services/, src/formatters/, src/types/, src/utils/
@@ -47,17 +49,34 @@
   - ✅ table-formatter.ts complete (uses cli-table3 with spread operator)
   - ✅ index.ts complete (exports all formatters + factory function)
 - ✅ CLI commands (COMPLETE - 100%):
-  - ✅ ec2.ts command handler with Commander.js
+  - ✅ ec2.ts refactored to export createEC2Command() factory function
+  - ✅ Uses .action() callback pattern with Commander.js
   - ✅ Parses --region, --all-regions, --profile, --format options
   - ✅ Integrates EC2Service with profile support
-  - ✅ Uses formatOutput() factory function
+  - ✅ Uses formatOutput() with user-specified format (defaults to 'table')
   - ✅ index.ts exports commands
+- ✅ Main entry point (src/index.ts) - COMPLETE:
+  - ✅ Shebang added: #!/usr/bin/env node
+  - ✅ Commander program instance created
+  - ✅ Program name, description, and version configured
+  - ✅ EC2 subcommand registered via addCommand(createEC2Command())
+  - ✅ .parse(process.argv) called to execute CLI
+  - ✅ Successfully compiles and runs
+- ✅ CLAUDE.md file created:
+  - ✅ Development commands documented (build, run, CLI usage)
+  - ✅ Architecture patterns explained (layered architecture, data flow)
+  - ✅ Key design patterns documented (factory, service class, parallel execution, error transformation)
+  - ✅ AWS integration details (credential handling, client initialization, response transformation)
+  - ✅ TypeScript configuration explained
+  - ✅ Error handling strategy documented
+  - ✅ Code organization principles outlined
+  - ✅ Current limitations noted
+  - ✅ Important files listed with descriptions
 
 **Next Steps:**
-1. Create main entry point (src/index.ts)
-2. Add error handling and validation (src/utils/)
-3. Add npm scripts for build, dev, and start
-4. Test the CLI with AWS credentials
+1. Add npm scripts for build, dev, and start
+2. Test the CLI with AWS credentials
+3. Update README with actual usage instructions
 
 ---
 
@@ -162,16 +181,17 @@
   - ✅ Fully meets requirements
 
 ### 10. ✅ Implement CLI command structure with Commander.js - COMPLETE
-- ✅ `src/commands/ec2.ts` - EC2 command handler
-  - ✅ Created Commander program with description
+- ✅ `src/commands/ec2.ts` - EC2 command handler refactored to factory pattern
+  - ✅ Exports createEC2Command() function that returns a Command object
+  - ✅ Uses .action() callback to handle command execution
   - ✅ Parses all 4 required options: --region, --all-regions, --profile, --format
   - ✅ Passes profile to EC2Service constructor
   - ✅ Uses formatOutput() with user-specified format (defaults to 'table')
   - ✅ Handles both single region and all-regions modes
   - ✅ US regions list defined: us-east-1, us-east-2, us-west-1, us-west-2, us-gov-west-1, us-gov-east-1
-  - ✅ Error handling with .catch()
+  - ✅ Error handling with .catch() for both async branches
 - ✅ `src/commands/index.ts` - Export commands
-  - ✅ Exports ec2 command with correct relative path syntax
+  - ✅ Exports createEC2Command function
 
 ### 11. ✅ Add error handling and validation - COMPLETE
 - ✅ `src/utils/error-handler.ts` - Custom error types created
@@ -202,11 +222,25 @@
   - ✅ Generic error fallback for unknown errors
   - ✅ Exit code 1 on all errors
 
-### 12. ❌ Create main entry point and wire everything together
-- `src/index.ts` - Set up Commander program
-- Register commands
-- Add help text and examples
-- Add shebang for CLI execution: `#!/usr/bin/env node`
+### 12. ✅ Create main entry point and wire everything together - COMPLETE
+Created `src/index.ts` as the main CLI entry point:
+- ✅ Add shebang at top of file: `#!/usr/bin/env node`
+- ✅ Import Commander: `import { Command } from 'commander';`
+- ✅ Import createEC2Command from './commands/ec2'
+- ✅ Create main Commander program instance
+- ✅ Set program name: 'cloud-inventory'
+- ✅ Set program description: 'Application for querying cloud resources'
+- ✅ Set version: '0.0.0' (hardcoded, not from package.json due to module complexity)
+- ✅ Register the EC2 command as a subcommand using `program.addCommand(createEC2Command())`
+- ✅ Call `.parse(process.argv)` to execute the CLI
+- ✅ Successfully compiles with `tsc` and runs with `node dist/index.js`
+- ✅ CLI displays help text correctly
+- ✅ ec2 subcommand shows proper options with `--help`
+
+**Implementation Notes:**
+- Used CommonJS modules (`"module": "CommonJS"`) instead of ES modules to avoid module resolution complexity
+- Refactored ec2.ts to use factory pattern (createEC2Command()) instead of executing on import
+- Version hardcoded to avoid JSON import issues (can be updated later if needed)
 
 ### 13. ❌ Add npm scripts for build, dev, and start
 Add to package.json:

@@ -8,6 +8,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "CommonJS",
+    "moduleResolution": "node",
     "target": "ES2020",
     "types": ["node"],
     // For nodejs:
@@ -41,5 +42,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "resolveJsonModule": true
   }
 }

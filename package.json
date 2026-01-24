@@ -3,6 +3,7 @@
   "description": "TypeScript application to collect cloud inventory for the purpose of learning TypeScript",
   "author": "Kevin Breit",
   "main": "dist/index.js",
+  "version": "0.0.0",
   "devDependencies": {
     "@types/node": "^25.0.9",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
