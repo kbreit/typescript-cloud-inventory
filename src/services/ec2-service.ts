@@ -1,6 +1,17 @@
 import { createEC2Client } from "./aws-client";
 import { EC2Instance } from "../types/index";
-import { DescribeInstancesCommand } from "@aws-sdk/client-ec2";
+import {
+  CredentialError,
+  AuthenticationError,
+  AccessDeniedError,
+  RateLimitError
+} from '../utils/error-handler';
+import {
+  DescribeInstancesCommand,
+  Reservation,
+  Instance,
+  Tag,
+} from "@aws-sdk/client-ec2";
 
 export class EC2Service {
   private profile: string | undefined;
@@ -17,16 +28,39 @@ export class EC2Service {
     }
 
     const command = new DescribeInstancesCommand(input);
-    const response = await client.send(command);
+    let response;
+    try {
+      response = await client.send(command);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'name' in error) {
+          if (error.name === 'CredentialsProviderError') {
+            throw new CredentialError('Invalid credentials!');
+            process.exit(1)
+          }
+          else if (error.name === 'AuthFailure') {
+            throw new AuthenticationError('Authentication failure');
+            process.exit(1)
+          }
+          else if (error.name === 'UnauthorizedOperation') {
+            throw new AccessDeniedError('Access denied');
+            process.exit(1)
+          }
+          else if (error.name === 'ThrottlingException') {
+            throw new RateLimitError('Rate limit exceeded. Try again soon.');
+            process.exit(1)
+          }
+      }
+      throw error;
+    }
 
-    const reservations = response.Reservations || [];
-    const allInstances = reservations.flatMap(reservation => reservation.Instances || []);
+    const reservations: Reservation[] = response.Reservations || [];
+    const allInstances: Instance[] = reservations.flatMap((reservation: Reservation) => reservation.Instances || []);
 
-    const ec2Instances: EC2Instance[] = allInstances.map(instance => ({
+    const ec2Instances: EC2Instance[] = allInstances.map((instance: Instance) => ({
         id: instance.InstanceId || '',
         type: instance.InstanceType || '',
         state: instance.State?.Name || '',
-        name: instance.Tags?.find(tag => tag.Key === 'Name')?.Value || '', 
+        name: instance.Tags?.find((tag: Tag) => tag.Key === 'Name')?.Value || '', 
       }));
 
     return ec2Instances;

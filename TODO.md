@@ -173,11 +173,34 @@
 - ✅ `src/commands/index.ts` - Export commands
   - ✅ Exports ec2 command with correct relative path syntax
 
-### 11. ❌ Add error handling and validation
-- `src/utils/error-handler.ts` - Custom error types
-- Handle AWS SDK errors (credentials, permissions, rate limiting)
-- Validate CLI inputs
-- Provide helpful error messages
+### 11. ✅ Add error handling and validation - COMPLETE
+- ✅ `src/utils/error-handler.ts` - Custom error types created
+  - ✅ CredentialError class
+  - ✅ AuthenticationError class
+  - ✅ AccessDeniedError class
+  - ✅ RateLimitError class
+  - ✅ RegionError class
+  - ✅ FormatError class
+  - ✅ OptionError class
+- ✅ Handle AWS SDK errors in service layer (src/services/ec2-service.ts)
+  - ✅ Catches CredentialsProviderError → converts to CredentialError
+  - ✅ Catches AuthFailure → converts to AuthenticationError
+  - ✅ Catches UnauthorizedOperation → converts to AccessDeniedError
+  - ✅ Catches ThrottlingException → converts to RateLimitError
+  - ✅ Uses proper TypeScript type narrowing for unknown errors
+  - ✅ Re-throws unknown errors appropriately
+- ✅ Validate CLI inputs (src/commands/ec2.ts)
+  - ✅ VALID_FORMATS constant created in src/types/config.ts
+  - ✅ Format validation (in src/formatters/index.ts using VALID_FORMATS)
+  - ✅ Region validation (checks against usRegions array)
+  - ✅ Check for conflicting flags (line 28: both --region and --allRegions)
+  - ✅ Check for missing flags (line 32: neither --region nor --allRegions)
+- ✅ Provide helpful error messages in command layer (src/commands/ec2.ts)
+  - ✅ All custom error types imported
+  - ✅ Both catch blocks (lines 41-55 and 64-77) have instanceof checks
+  - ✅ User-friendly error messages for: Credential, Authentication, AccessDenied, RateLimit
+  - ✅ Generic error fallback for unknown errors
+  - ✅ Exit code 1 on all errors
 
 ### 12. ❌ Create main entry point and wire everything together
 - `src/index.ts` - Set up Commander program
