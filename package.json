@@ -18,5 +18,12 @@
     "@aws-sdk/credential-providers": "^3.972.0",
     "cli-table3": "^0.6.5",
     "commander": "^14.0.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\""
   }
 }

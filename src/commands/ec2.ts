@@ -7,7 +7,8 @@ import {
   CredentialError,
   AuthenticationError,
   AccessDeniedError,
-  RateLimitError
+  RateLimitError,
+  FormatError
 } from '../utils/error-handler';
 
 export function createEC2Command(): Command {
@@ -18,59 +19,44 @@ export function createEC2Command(): Command {
     .option("--profile [value]", "AWS CLI profile name")
     .option("--format [value]", "Output format of data")
     .action (async (options) => {
-      const service = new EC2Service(options.profile);
-      const usRegions = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'us-gov-west-1', 'us-gov-east-1'];
+      try {
+        const service = new EC2Service(options.profile);
+        const usRegions = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'us-gov-west-1', 'us-gov-east-1'];
 
-      if (options.allRegions && options.region) {
-        throw new OptionError('--all-regions and --region are mutually exclusive');
-      }
-
-      if (!options.allRegions && !options.region) {
-        throw new OptionError('Either --all-regions or --region must be specified');
-      }
-
-      if (options.allRegions === true) {
-        service.listAllRegions(usRegions)
-          .then(instances => {
-            console.log(formatOutput(instances, options.format || 'table'));
-          })
-          .catch(err => {
-            if(err instanceof CredentialError) {
-              console.error('Credential error: ', err.message);
-            } else if(err instanceof AuthenticationError) {
-              console.error('Authentication error: ', err.message);
-            } else if(err instanceof AccessDeniedError ) {
-              console.error('Access denied error: ', err.message);
-            } else if(err instanceof RateLimitError) {
-              console.error('Rate limit error: ', err.message);
-            } else {
-              console.error('Error: ', err.message);
-            }
-          
-            process.exit(1)
-          });
-      } else {
-        if (!usRegions.includes(options.region)) {
-          throw new RegionError("Invalid region");
+        if (options.allRegions && options.region) {
+          throw new OptionError('--all-regions and --region are mutually exclusive');
         }
-        service.listInstances(options.region)
-          .then(instances => {
-            console.log(formatOutput(instances, options.format || 'table'));
-          })
-          .catch(err => {
-            if(err instanceof CredentialError) {
-              console.error('Credential error: ', err.message);
-            } else if(err instanceof AuthenticationError) {
-              console.error('Authentication error: ', err.message);
-            } else if(err instanceof AccessDeniedError ) {
-              console.error('Access denied error: ', err.message);
-            } else if(err instanceof RateLimitError) {
-              console.error('Rate limit error: ', err.message);
-            } else {
-              console.error('Error: ', err.message);
-            }
-            process.exit(1);
-          });
+
+        if (!options.allRegions && !options.region) {
+          throw new OptionError('Either --all-regions or --region must be specified');
+        }
+        let instances;
+        if (options.allRegions === true) {
+          instances = await service.listAllRegions(usRegions)
+        } else {
+          if(!usRegions.includes(options.region)) {
+            throw new RegionError('Invalid region');
+          }
+          instances = await service.listInstances(options.region)
+        }
+        console.log(formatOutput(instances, options.format || 'table' ));
+      } catch (err: unknown) {
+        if(err instanceof OptionError) {
+          console.error('Option error: ', err.message);
+        } else if(err instanceof CredentialError) {
+          console.error('Credential error: ', err.message);
+        } else if(err instanceof AuthenticationError) {
+          console.error('Authentication error: ', err.message);
+        } else if(err instanceof AccessDeniedError ) {
+          console.error('Access denied error: ', err.message);
+        } else if(err instanceof RateLimitError) {
+          console.error('Rate limit error: ', err.message);
+        } else if(err instanceof RegionError) {
+          console.error('Region error: ', err.message);
+        } else if(err instanceof FormatError) {
+          console.error('Format error: ', err.message);
+        }
+        process.exit(1);
       }
     });
   return program;

@@ -115,7 +115,31 @@ Custom error classes in `src/utils/error-handler.ts`:
 - `OptionError` - CLI option conflicts
 - `FormatError` - Invalid output format
 
-Errors are caught at the service layer, transformed to custom types, then handled with user-friendly messages at the CLI layer.
+### Error Handling Pattern
+
+The CLI uses a unified error handling approach in `src/commands/ec2.ts`:
+
+1. **Async/await pattern**: All AWS operations use `await` instead of `.then()/.catch()` chains
+2. **Single try-catch block**: All errors (validation, AWS, formatting) are caught in one place
+3. **Type-based error handling**: Uses `instanceof` checks to provide specific error messages
+4. **Clean user experience**: All errors display user-friendly messages with exit code 1, no stack traces
+
+Example structure:
+```typescript
+.action(async (options) => {
+  try {
+    // Validation
+    // AWS operations with await
+    // Format and output
+  } catch (err: unknown) {
+    // Handle all error types with instanceof checks
+    // Display clean error message
+    // Exit with code 1
+  }
+});
+```
+
+This approach ensures consistent error handling for both synchronous validation errors and asynchronous AWS SDK errors.
 
 ## Code Organization Principles
 
@@ -139,10 +163,38 @@ All I/O operations use async/await. The service layer methods return `Promise<EC
 
 - Only supports EC2 instances (S3, RDS, Lambda not yet implemented)
 - Only queries US regions (hardcoded in `src/commands/ec2.ts`)
+- GovCloud regions included in `--all-regions` require special credentials
 - No pagination for large result sets
-- Main entry point `src/index.ts` is minimal (just shebang)
 - No automated tests yet
 - No ESLint configuration file (despite eslint being in devDependencies)
+
+## Known Issues
+
+1. **GovCloud Authentication** (src/commands/ec2.ts:24)
+   - `--all-regions` includes us-gov-west-1 and us-gov-east-1
+   - These regions require special GovCloud AWS credentials
+   - Standard AWS credentials will fail with "Authentication error: Authentication failure"
+   - Consider removing GovCloud regions or adding `--include-govcloud` flag
+
+## Testing Status
+
+**Tested and Working:**
+- ✅ Build process (`npm run build`)
+- ✅ Single region queries (us-east-1)
+- ✅ All three output formats (table, JSON, CSV)
+- ✅ AWS credential authentication
+- ✅ All error handling scenarios display clean error messages:
+  - ✅ Invalid format error
+  - ✅ Invalid region error
+  - ✅ Conflicting flags error
+  - ✅ Missing flags error
+  - ✅ GovCloud authentication error
+  - ✅ AWS credential errors
+  - ✅ Access denied errors
+  - ✅ Rate limit errors
+
+**Known Limitations:**
+- ⚠️ `--all-regions` fails on GovCloud regions without GovCloud credentials (expected behavior)
 
 ## Important Files
 

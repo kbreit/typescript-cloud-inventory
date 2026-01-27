@@ -88,54 +88,259 @@ function formatAsTable(instances: EC2Instance[]): string {
 }
 ```
 
-## Project Setup (To Be Implemented)
+## Project Setup
 
 ### Prerequisites
 - Node.js 18 or higher
 - AWS account with configured credentials
-- npm or yarn package manager
+- npm package manager
+- AWS CLI configured (optional, but recommended)
 
 ### Installation
-```bash
-# Install dependencies
-npm install
 
-# Compile TypeScript
-npm run build
+1. **Clone or navigate to the project directory**
+   ```bash
+   cd typescript-demo
+   ```
 
-# Run in development mode
-npm run dev
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Run compiled version
-npm start
-```
+3. **Compile TypeScript**
+   ```bash
+   npm run build
+   ```
+
+4. **Verify installation**
+   ```bash
+   npm start -- ec2 --help
+   ```
 
 ### Configuration
 
 #### AWS Credentials
-The tool uses the standard AWS credential chain:
+
+The tool uses the standard AWS credential chain (in order of precedence):
 1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
 2. AWS credentials file (`~/.aws/credentials`)
-3. IAM role (if running on EC2/ECS)
+3. IAM role (if running on EC2/ECS/Lambda)
+
+**To configure credentials:**
+
+Using AWS CLI (recommended):
+```bash
+aws configure
+```
+
+Or manually create `~/.aws/credentials`:
+```ini
+[default]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+
+[production]
+aws_access_key_id = PROD_ACCESS_KEY
+aws_secret_access_key = PROD_SECRET_KEY
+```
 
 #### AWS Profile
-Use the `--profile` flag to specify a named profile from `~/.aws/credentials`.
+
+Use the `--profile` flag to specify a named profile from `~/.aws/credentials`:
+```bash
+npm start -- ec2 --region us-east-1 --profile production
+```
+
+#### Required IAM Permissions
+
+The tool requires the following IAM permissions:
+- `ec2:DescribeInstances` - For listing EC2 instances
+- `ec2:DescribeRegions` - For querying multiple regions (optional)
 
 ## Usage Examples
 
+### Basic Commands
+
+**List EC2 instances in a single region (table format - default)**
 ```bash
-# List EC2 instances in us-east-1 (table format)
-npm start ec2 --region us-east-1
+npm start -- ec2 --region us-east-1
+```
+Output:
+```
+┌─────────────────────┬────────┬──────────┬─────────┐
+│ ID                  │ Name   │ Type     │ State   │
+├─────────────────────┼────────┼──────────┼─────────┤
+│ i-04d5ea5b5d938f1e4 │ TSDemo │ t3.micro │ stopped │
+└─────────────────────┴────────┴──────────┴─────────┘
+```
 
-# List EC2 in all regions (JSON format)
-npm start ec2 --all-regions --format json
+**List EC2 instances in all US regions**
+```bash
+npm start -- ec2 --all-regions
+```
 
-# Use specific AWS profile (CSV format)
-npm start ec2 --region eu-west-1 --profile production --format csv
+**Use specific AWS profile**
+```bash
+npm start -- ec2 --region us-east-1 --profile production
+```
 
-# Get help
-npm start --help
-npm start ec2 --help
+### Output Formats
+
+**JSON format** (useful for piping to other tools)
+```bash
+npm start -- ec2 --region us-east-1 --format json
+```
+Output:
+```json
+[
+  {
+    "id": "i-04d5ea5b5d938f1e4",
+    "type": "t3.micro",
+    "state": "stopped",
+    "name": "TSDemo"
+  }
+]
+```
+
+**CSV format** (useful for spreadsheet import)
+```bash
+npm start -- ec2 --region us-east-1 --format csv
+```
+Output:
+```csv
+ID,Name,Type,State
+i-04d5ea5b5d938f1e4,TSDemo,t3.micro,stopped
+```
+
+**Table format** (default, human-readable)
+```bash
+npm start -- ec2 --region us-east-1 --format table
+# or simply
+npm start -- ec2 --region us-east-1
+```
+
+### Getting Help
+
+**General help**
+```bash
+npm start -- --help
+```
+
+**EC2 command help**
+```bash
+npm start -- ec2 --help
+```
+
+### Available Regions
+
+The `--all-regions` flag queries these US regions:
+- us-east-1 (N. Virginia)
+- us-east-2 (Ohio)
+- us-west-1 (N. California)
+- us-west-2 (Oregon)
+- us-gov-west-1 (GovCloud West) *
+- us-gov-east-1 (GovCloud East) *
+
+\* GovCloud regions require special AWS GovCloud credentials
+
+## Troubleshooting
+
+### Common Errors
+
+**"Credential error: ..."**
+- **Cause**: AWS credentials not found or invalid
+- **Solution**:
+  - Run `aws configure` to set up credentials
+  - Verify credentials file exists at `~/.aws/credentials`
+  - Check environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+  - Verify the IAM user has programmatic access enabled
+
+**"Authentication error: Authentication failure"**
+- **Cause**: Credentials are found but authentication failed
+- **Solution**:
+  - Verify your AWS access key and secret key are correct
+  - Check if the IAM user is active and not disabled
+  - For GovCloud regions, ensure you're using GovCloud credentials
+  - Try running `aws sts get-caller-identity` to verify credentials
+
+**"Access denied error: ..."**
+- **Cause**: IAM user/role lacks required permissions
+- **Solution**:
+  - Add `ec2:DescribeInstances` permission to your IAM policy
+  - Example minimal IAM policy:
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:DescribeInstances",
+            "ec2:DescribeRegions"
+          ],
+          "Resource": "*"
+        }
+      ]
+    }
+    ```
+
+**"Option error: Either --all-regions or --region must be specified"**
+- **Cause**: Missing required flag
+- **Solution**: Provide either `--region <region-name>` or `--all-regions`
+
+**"Option error: --all-regions and --region are mutually exclusive"**
+- **Cause**: Both flags provided simultaneously
+- **Solution**: Use only one flag: either `--region` OR `--all-regions`
+
+**"Region error: Invalid region"**
+- **Cause**: Specified region is not in the supported US regions list
+- **Solution**: Use one of the supported regions:
+  - us-east-1, us-east-2, us-west-1, us-west-2
+  - For other regions, modify the region list in `src/commands/ec2.ts`
+
+**"Format error: Incorrect format"**
+- **Cause**: Invalid output format specified
+- **Solution**: Use one of the supported formats: `json`, `csv`, or `table`
+
+**"Rate limit error: ..."**
+- **Cause**: AWS API rate limits exceeded
+- **Solution**:
+  - Wait a few minutes and try again
+  - Reduce the number of regions queried
+  - Use `--region` instead of `--all-regions`
+
+### GovCloud Regions
+
+If using `--all-regions` with standard AWS credentials, you'll see authentication errors for GovCloud regions. This is expected behavior. Options:
+1. Remove GovCloud regions from the list in `src/commands/ec2.ts`
+2. Use GovCloud-specific credentials when querying those regions
+3. Ignore the GovCloud authentication errors (other regions will still work)
+
+### Debugging
+
+**Enable verbose logging**
+```bash
+# Set AWS SDK debug mode
+export AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE=1
+export ACTIONS_STEP_DEBUG=true
+npm start -- ec2 --region us-east-1
+```
+
+**Verify AWS CLI works**
+```bash
+# Test AWS credentials
+aws sts get-caller-identity
+
+# Test EC2 access
+aws ec2 describe-instances --region us-east-1
+```
+
+**Check TypeScript compilation**
+```bash
+npm run build
+# Check dist/ directory was created
+ls -la dist/
 ```
 
 ## Development Workflow
